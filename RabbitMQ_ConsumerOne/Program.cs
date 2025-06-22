@@ -14,25 +14,12 @@ var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
-string queueName = "a";
-string exchangeName = "alii";
-await channel.QueueDeclareAsync(queue: queueName,
-							durable: false,
-							exclusive: false,
-							autoDelete: false,
-							arguments: null);
-
-await channel.ExchangeDeclareAsync(exchange: exchangeName, ExchangeType.Direct);
-
-await channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: "al");
+await channel.ExchangeDeclareAsync(exchange: "secondexchange", ExchangeType.Fanout);
 
 
+await channel.QueueDeclareAsync("queue_one");
 
-//Dictionary<string, object> arguments = new Dictionary<string, object>()
-//{
-//	{"x-match","all" },
-//	{"name","ali" }
-//};
+await channel.QueueBindAsync(queue: "queue_one", exchange: "secondexchange", routingKey: "");
 
 
 var consumer = new AsyncEventingBasicConsumer(channel);
@@ -41,11 +28,9 @@ consumer.ReceivedAsync += async (model, ea) =>
 	var body = ea.Body.ToArray();
 	var message = Encoding.UTF8.GetString(body);
 	Console.WriteLine($" [x] Received {message}");
-	await channel.BasicRejectAsync(ea.DeliveryTag, false);
-	//return Task.CompletedTask;
 };
 
-await channel.BasicConsumeAsync(queueName, false, consumer);
+await channel.BasicConsumeAsync("queue_one", true, consumer);
 
 Console.WriteLine(" Press [enter] to exit.");
 Console.ReadLine();
