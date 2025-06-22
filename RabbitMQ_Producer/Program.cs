@@ -7,22 +7,19 @@ var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
 
-IBasicProperties basicProperties = new BasicProperties();
 
-basicProperties.Headers = new Dictionary<string, object?>()
-	{
-		{ "name","ali" }
-	};
 
-string exchangeName = "ali";
 
-await channel.ExchangeDeclareAsync(exchange: exchangeName, ExchangeType.Headers);
+await channel.ExchangeDeclareAsync(exchange: "firstexchange", ExchangeType.Direct);
+await channel.ExchangeDeclareAsync(exchange: "secondexchange", ExchangeType.Fanout);
+
+await channel.ExchangeBindAsync("secondexchange", "firstexchange", "routingkey1");
 
 const string message = "Hello World!";
 var body = Encoding.UTF8.GetBytes(message);
 
-await channel.BasicPublishAsync(exchange: exchangeName, routingKey: "hello", body: body);
+await channel.BasicPublishAsync(exchange: "firstexchange", routingKey: "routingkey1", body: body);
 
-Console.WriteLine("Hello, World!");
+Console.WriteLine("Message send");
 
 Console.ReadLine();
