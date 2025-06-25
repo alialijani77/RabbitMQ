@@ -10,15 +10,17 @@ using var channel = await connection.CreateChannelAsync();
 
 
 
-await channel.ExchangeDeclareAsync(exchange: "firstexchange", ExchangeType.Direct);
-await channel.ExchangeDeclareAsync(exchange: "secondexchange", ExchangeType.Fanout);
+await channel.ExchangeDeclareAsync(exchange: "firstexchange", ExchangeType.Direct, false, false);
+await channel.ExchangeDeclareAsync(exchange: "secondexchange", ExchangeType.Fanout, false, false);
+await channel.QueueDeclareAsync(queue: "queue_two", durable: false, exclusive: false, autoDelete: false, arguments: null);
+await channel.QueueDeclareAsync(queue: "queue_one", durable: false, exclusive: false, autoDelete: false, arguments: null);
 
-await channel.ExchangeBindAsync("secondexchange", "firstexchange", "routingkey1");
+await channel.ExchangeBindAsync("secondexchange", "firstexchange", "");
 
 const string message = "Hello World!";
 var body = Encoding.UTF8.GetBytes(message);
 
-await channel.BasicPublishAsync(exchange: "firstexchange", routingKey: "routingkey1", body: body);
+await channel.BasicPublishAsync(exchange: "firstexchange",routingKey : "", body: body);
 
 Console.WriteLine("Message send");
 

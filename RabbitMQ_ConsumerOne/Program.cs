@@ -17,7 +17,7 @@ using var channel = await connection.CreateChannelAsync();
 await channel.ExchangeDeclareAsync(exchange: "secondexchange", ExchangeType.Fanout);
 
 
-await channel.QueueDeclareAsync("queue_one");
+
 
 await channel.QueueBindAsync(queue: "queue_one", exchange: "secondexchange", routingKey: "");
 
